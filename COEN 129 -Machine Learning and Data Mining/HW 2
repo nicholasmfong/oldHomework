@@ -1,0 +1,322 @@
+#COEN 129 HW 2
+#Yi Fang
+#Nicholas Fong
+#4-18-17
+#Coded in Python 3.4.1
+#Numpy 1.8.1
+
+import numpy as np  #for matrices
+import math #for log
+import itertools    #for generating columns to remove to test which variables are not important for exercise 5
+
+#get the data, skipping the classification because we already know that it is sorted by classifiction
+data = np.genfromtxt('C:\\Nicholas\\Iris_Dataset.txt', delimiter=',', usecols=(0,1,2,3))
+#split up the data based on classification
+dataSetosa = data[0:50]
+dataVersicolor = data[50:100]
+dataVirginica = data[100:150]
+#randomly shuffle the data and then split it into training and test data (exercise 1)
+np.random.shuffle(dataSetosa)
+setosaTraining = dataSetosa[:40]
+setosaTest = dataSetosa[40:]
+
+np.random.shuffle(dataVersicolor)
+versicolorTraining = dataVersicolor[:40]
+versicolorTest = dataVersicolor[40:]
+
+np.random.shuffle(dataVirginica)
+virginicaTraining = dataVirginica[:40]
+virginicaTest = dataVirginica[40:]
+#find the averages of each data set
+setosaMean = np.array([np.mean(setosaTraining, axis=0)])
+versicolorMean = np.array([np.mean(versicolorTraining, axis=0)])
+virginicaMean = np.array([np.mean(virginicaTraining, axis=0)])
+#calculate the Covariance Matrix Sigma = 1/n*sum((xi-mu)(xi-mu)T)
+setosaCovariance = 0
+for row in setosaTraining:
+    setosaCovariance += (row-setosaMean).T*(row-setosaMean)
+setosaCovariance /= 40
+
+versicolorCovariance = 0
+for row in versicolorTraining:
+    versicolorCovariance += (row-versicolorMean).T*(row-versicolorMean)
+versicolorCovariance /= 40
+
+virginicaCovariance = 0
+for row in virginicaTraining:
+    virginicaCovariance += (row-virginicaMean).T*(row-virginicaMean)
+virginicaCovariance /= 40
+#find the likelihood of the data point x given a normal distribution centered at mu with covariance cov
+def gaussianProbability(x, mu, cov):
+    return -math.log(np.linalg.det(cov))/2 - np.dot(np.dot((x-mu),np.linalg.inv(cov)),(x-mu).T)
+
+#finds the most likely classification for a given data point using QDA
+def QDAClassifier(x):
+    setosaLikelihood = gaussianProbability(x, setosaMean, setosaCovariance)
+    versicolorLikelihood = gaussianProbability(x, versicolorMean, versicolorCovariance)
+    virginicaLikelihood = gaussianProbability(x, virginicaMean, virginicaCovariance)
+    if max(setosaLikelihood, versicolorLikelihood, virginicaLikelihood) == setosaLikelihood:
+        return 'Iris-setosa'
+    elif max(setosaLikelihood, versicolorLikelihood, virginicaLikelihood) == versicolorLikelihood:
+        return 'Iris-versicolor'
+    elif max(setosaLikelihood, versicolorLikelihood, virginicaLikelihood) == virginicaLikelihood:
+        return 'Iris-virginica'
+    else:
+        print('Error in classificationlassifier')
+        return 'error'
+#LDA is like QDA but it assumes that the covariance is the same for all distributions
+def LDAClassifier(x):
+    avgCovariance = (setosaCovariance+versicolorCovariance+virginicaCovariance)/3.0
+    setosaLikelihood = gaussianProbability(x, setosaMean, avgCovariance)
+    versicolorLikelihood = gaussianProbability(x, versicolorMean, avgCovariance)
+    virginicaLikelihood = gaussianProbability(x, virginicaMean, avgCovariance)
+    if max(setosaLikelihood, versicolorLikelihood, virginicaLikelihood) == setosaLikelihood:
+        return 'Iris-setosa'
+    elif max(setosaLikelihood, versicolorLikelihood, virginicaLikelihood) == versicolorLikelihood:
+        return 'Iris-versicolor'
+    elif max(setosaLikelihood, versicolorLikelihood, virginicaLikelihood) == virginicaLikelihood:
+        return 'Iris-virginica'
+    else:
+        print('Error in classifier')
+        return 'error'
+
+#find the number of misclassified values in each dataset
+setosaTrainingErrorsQDA = 0
+setosaTrainingErrorsLDA = 0
+for row in setosaTraining:
+    if QDAClassifier(row) != 'Iris-setosa':
+        setosaTrainingErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-setosa':
+        setosaTrainingErrorsLDA += 1
+setosaTestErrorsQDA = 0
+setosaTestErrorsLDA = 0
+for row in setosaTest:
+    if QDAClassifier(row) != 'Iris-setosa':
+        setosaTestErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-setosa':
+        setosaTestErrorsLDA += 1
+
+versicolorTrainingErrorsQDA = 0
+versicolorTrainingErrorsLDA = 0
+for row in versicolorTraining:
+    if QDAClassifier(row) != 'Iris-versicolor':
+        versicolorTrainingErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-versicolor':
+        versicolorTrainingErrorsLDA += 1       
+versicolorTestErrorsQDA = 0
+versicolorTestErrorsLDA = 0
+for row in versicolorTest:
+    if QDAClassifier(row) != 'Iris-versicolor':
+        versicolorTestErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-versicolor':
+        versicolorTestErrorsLDA += 1
+        
+virginicaTrainingErrorsQDA = 0
+virginicaTrainingErrorsLDA = 0
+for row in virginicaTraining:
+    if QDAClassifier(row) != 'Iris-virginica':
+        virginicaTrainingErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-virginica':
+        virginicaTrainingErrorsLDA += 1
+virginicaTestErrorsQDA = 0
+virginicaTestErrorsLDA = 0
+for row in virginicaTest:
+    if QDAClassifier(row) != 'Iris-virginica':
+        virginicaTestErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-virginica':
+        virginicaTestErrorsLDA += 1
+#output our results for LDA and QDA
+print('LDA Classification error rates:') #exercise 2
+print('Setosa training error rate =', setosaTrainingErrorsLDA/len(setosaTraining))
+print('Setosa test error rate =', setosaTestErrorsLDA/len(setosaTest))
+print('Versicolor training error rate =', versicolorTrainingErrorsLDA/len(versicolorTraining))
+print('Versicolor test error rate =', versicolorTestErrorsLDA/len(versicolorTest))
+print('Virginica training error rate =', virginicaTrainingErrorsLDA/len(virginicaTraining))
+print('Virginica test error rate =', virginicaTestErrorsLDA/len(virginicaTest))
+print('Overall test error rate =', (setosaTestErrorsLDA+versicolorTestErrorsLDA+virginicaTestErrorsLDA)/30.0)
+print('Overall error rate =', (setosaTrainingErrorsLDA+setosaTestErrorsLDA+versicolorTrainingErrorsLDA+versicolorTestErrorsLDA+virginicaTrainingErrorsLDA+virginicaTestErrorsLDA)/150.0,'\n')
+
+print('QDA Classification error rates:') #exercise 3
+print('Setosa training error rate =', setosaTrainingErrorsQDA/len(setosaTraining))
+print('Setosa test error rate =', setosaTestErrorsQDA/len(setosaTest))
+print('Versicolor training error rate =', versicolorTrainingErrorsQDA/len(versicolorTraining))
+print('Versicolor test error rate =', versicolorTestErrorsQDA/len(versicolorTest))
+print('Virginica training error rate =', virginicaTrainingErrorsQDA/len(virginicaTraining))
+print('Virginica test error rate =', virginicaTestErrorsQDA/len(virginicaTest))
+print('Overall test error rate =', (setosaTestErrorsQDA+versicolorTestErrorsQDA+virginicaTestErrorsQDA)/30.0)
+print('Overall error rate =', (setosaTrainingErrorsQDA+setosaTestErrorsQDA+versicolorTrainingErrorsQDA+versicolorTestErrorsQDA+virginicaTrainingErrorsQDA+virginicaTestErrorsQDA)/150.0,'\n')
+#exercise 4
+if (setosaTrainingErrorsLDA+setosaTestErrorsLDA+versicolorTrainingErrorsLDA+versicolorTestErrorsLDA+virginicaTrainingErrorsLDA+virginicaTestErrorsLDA)/150.0 <= 0.05:
+    print('Since LDA has a low error rate (<=0.05), we can assume that the species of Iris are linearly separable from other species')
+#exercise 6, recalculate the covariance assuming that features are independent (i.e. covariance matrix is a diagonal matrix)
+di = np.diag_indices(4) #get the indices of the diagonal entries to easily insert along the diagonal
+setosaCovariance = np.zeros((4,4))
+setosaCovariance[di] = np.var(setosaTraining, axis=0)   #set the diagonal as the individual variance of each column of data
+
+versicolorCovariance = np.zeros((4,4))
+versicolorCovariance[di] = np.var(versicolorTraining, axis=0)
+
+virginicaCovariance = np.zeros((4,4))
+virginicaCovariance[di] = np.var(virginicaTraining, axis=0)
+#redo the classifiers with the new covariance
+print('\n\nRepeat assuming that the features are independent (exercise 6)\n')
+setosaTrainingErrorsQDA = 0
+setosaTrainingErrorsLDA = 0
+for row in setosaTraining:
+    if QDAClassifier(row) != 'Iris-setosa':
+        setosaTrainingErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-setosa':
+        setosaTrainingErrorsLDA += 1
+setosaTestErrorsQDA = 0
+setosaTestErrorsLDA = 0
+for row in setosaTest:
+    if QDAClassifier(row) != 'Iris-setosa':
+        setosaTestErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-setosa':
+        setosaTestErrorsLDA += 1
+
+versicolorTrainingErrorsQDA = 0
+versicolorTrainingErrorsLDA = 0
+for row in versicolorTraining:
+    if QDAClassifier(row) != 'Iris-versicolor':
+        versicolorTrainingErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-versicolor':
+        versicolorTrainingErrorsLDA += 1       
+versicolorTestErrorsQDA = 0
+versicolorTestErrorsLDA = 0
+for row in versicolorTest:
+    if QDAClassifier(row) != 'Iris-versicolor':
+        versicolorTestErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-versicolor':
+        versicolorTestErrorsLDA += 1
+        
+virginicaTrainingErrorsQDA = 0
+virginicaTrainingErrorsLDA = 0
+for row in virginicaTraining:
+    if QDAClassifier(row) != 'Iris-virginica':
+        virginicaTrainingErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-virginica':
+        virginicaTrainingErrorsLDA += 1
+virginicaTestErrorsQDA = 0
+virginicaTestErrorsLDA = 0
+for row in virginicaTest:
+    if QDAClassifier(row) != 'Iris-virginica':
+        virginicaTestErrorsQDA += 1
+    if LDAClassifier(row) != 'Iris-virginica':
+        virginicaTestErrorsLDA += 1
+#output our results for LDA and QDA
+print('LDA Classification error rates:')
+print('Setosa training error rate =', setosaTrainingErrorsLDA/len(setosaTraining))
+print('Setosa test error rate =', setosaTestErrorsLDA/len(setosaTest))
+print('Versicolor training error rate =', versicolorTrainingErrorsLDA/len(versicolorTraining))
+print('Versicolor test error rate =', versicolorTestErrorsLDA/len(versicolorTest))
+print('Virginica training error rate =', virginicaTrainingErrorsLDA/len(virginicaTraining))
+print('Virginica test error rate =', virginicaTestErrorsLDA/len(virginicaTest))
+print('Overall test error rate =', (setosaTestErrorsLDA+versicolorTestErrorsLDA+virginicaTestErrorsLDA)/30.0)
+print('Overall error rate =', (setosaTrainingErrorsLDA+setosaTestErrorsLDA+versicolorTrainingErrorsLDA+versicolorTestErrorsLDA+virginicaTrainingErrorsLDA+virginicaTestErrorsLDA)/150.0,'\n')
+
+print('QDA Classification error rates:')
+print('Setosa training error rate =', setosaTrainingErrorsQDA/len(setosaTraining))
+print('Setosa test error rate =', setosaTestErrorsQDA/len(setosaTest))
+print('Versicolor training error rate =', versicolorTrainingErrorsQDA/len(versicolorTraining))
+print('Versicolor test error rate =', versicolorTestErrorsQDA/len(versicolorTest))
+print('Virginica training error rate =', virginicaTrainingErrorsQDA/len(virginicaTraining))
+print('Virginica test error rate =', virginicaTestErrorsQDA/len(virginicaTest))
+print('Overall test error rate =', (setosaTestErrorsQDA+versicolorTestErrorsQDA+virginicaTestErrorsQDA)/30.0)
+print('Overall error rate =', (setosaTrainingErrorsQDA+setosaTestErrorsQDA+versicolorTrainingErrorsQDA+versicolorTestErrorsQDA+virginicaTrainingErrorsQDA+virginicaTestErrorsQDA)/150.0,'\n')
+#exercise 5, test for unnecessary variables by repeating everything without various columns of data
+for i in range(1,4):    #remove between 1 and 3 columns from the dataset to see which variables are extraneous
+    iterations = list(itertools.combinations([0,1,2,3], i))
+    for columnsToRemove in iterations:
+        print('\nRemove column(s)', columnsToRemove)
+        dataCopy = data
+        dataCopy = np.delete(dataCopy, columnsToRemove, axis=1)
+        #split up the data based on classification
+        dataSetosa = dataCopy[0:50]
+        dataVersicolor = dataCopy[50:100]
+        dataVirginica = dataCopy[100:150]
+        #randomly shuffle the data and then split it into training and test data (exercise 1)
+        np.random.shuffle(dataSetosa)
+        setosaTraining = dataSetosa[:40]
+        setosaTest = dataSetosa[40:]
+
+        np.random.shuffle(dataVersicolor)
+        versicolorTraining = dataVersicolor[:40]
+        versicolorTest = dataVersicolor[40:]
+
+        np.random.shuffle(dataVirginica)
+        virginicaTraining = dataVirginica[:40]
+        virginicaTest = dataVirginica[40:]
+        #find the averages of each data set
+        setosaMean = np.array([np.mean(setosaTraining, axis=0)])
+        versicolorMean = np.array([np.mean(versicolorTraining, axis=0)])
+        virginicaMean = np.array([np.mean(virginicaTraining, axis=0)])
+        #calculate the Covariance Matrix Sigma = 1/n*sum((xi-mu)(xi-mu)T)
+        setosaCovariance = 0
+        for row in setosaTraining:
+            setosaCovariance += (row-setosaMean).T*(row-setosaMean)
+        setosaCovariance /= 40
+
+        versicolorCovariance = 0
+        for row in versicolorTraining:
+            versicolorCovariance += (row-versicolorMean).T*(row-versicolorMean)
+        versicolorCovariance /= 40
+
+        virginicaCovariance = 0
+        for row in virginicaTraining:
+            virginicaCovariance += (row-virginicaMean).T*(row-virginicaMean)
+        virginicaCovariance /= 40
+        #find the number of misclassified values in each dataset
+        setosaTrainingErrorsQDA = 0
+        setosaTrainingErrorsLDA = 0
+        for row in setosaTraining:
+            if QDAClassifier(row) != 'Iris-setosa':
+                setosaTrainingErrorsQDA += 1
+            if LDAClassifier(row) != 'Iris-setosa':
+                setosaTrainingErrorsLDA += 1
+        setosaTestErrorsQDA = 0
+        setosaTestErrorsLDA = 0
+        for row in setosaTest:
+            if QDAClassifier(row) != 'Iris-setosa':
+                setosaTestErrorsQDA += 1
+            if LDAClassifier(row) != 'Iris-setosa':
+                setosaTestErrorsLDA += 1
+
+        versicolorTrainingErrorsQDA = 0
+        versicolorTrainingErrorsLDA = 0
+        for row in versicolorTraining:
+            if QDAClassifier(row) != 'Iris-versicolor':
+                versicolorTrainingErrorsQDA += 1
+            if LDAClassifier(row) != 'Iris-versicolor':
+                versicolorTrainingErrorsLDA += 1       
+        versicolorTestErrorsQDA = 0
+        versicolorTestErrorsLDA = 0
+        for row in versicolorTest:
+            if QDAClassifier(row) != 'Iris-versicolor':
+                versicolorTestErrorsQDA += 1
+            if LDAClassifier(row) != 'Iris-versicolor':
+                versicolorTestErrorsLDA += 1
+                
+        virginicaTrainingErrorsQDA = 0
+        virginicaTrainingErrorsLDA = 0
+        for row in virginicaTraining:
+            if QDAClassifier(row) != 'Iris-virginica':
+                virginicaTrainingErrorsQDA += 1
+            if LDAClassifier(row) != 'Iris-virginica':
+                virginicaTrainingErrorsLDA += 1
+        virginicaTestErrorsQDA = 0
+        virginicaTestErrorsLDA = 0
+        for row in virginicaTest:
+            if QDAClassifier(row) != 'Iris-virginica':
+                virginicaTestErrorsQDA += 1
+            if LDAClassifier(row) != 'Iris-virginica':
+                virginicaTestErrorsLDA += 1
+        #output our results for LDA and QDA
+        print('LDA Classification error rates:')
+        print('Overall test error rate =', (setosaTestErrorsLDA+versicolorTestErrorsLDA+virginicaTestErrorsLDA)/30.0)
+        print('Overall error rate =', (setosaTrainingErrorsLDA+setosaTestErrorsLDA+versicolorTrainingErrorsLDA+versicolorTestErrorsLDA+virginicaTrainingErrorsLDA+virginicaTestErrorsLDA)/150.0,'\n')
+
+        print('QDA Classification error rates:')
+        print('Overall test error rate =', (setosaTestErrorsQDA+versicolorTestErrorsQDA+virginicaTestErrorsQDA)/30.0)
+        print('Overall error rate =', (setosaTrainingErrorsQDA+setosaTestErrorsQDA+versicolorTrainingErrorsQDA+versicolorTestErrorsQDA+virginicaTrainingErrorsQDA+virginicaTestErrorsQDA)/150.0,'\n')
+        
