@@ -1,0 +1,91 @@
+import math
+import numpy as np
+import csv
+from sklearn.linear_model import LogisticRegression
+import sklearn.discriminant_analysis
+import sklearn.preprocessing
+from sklearn import tree
+from sklearn.neighbors import KNeighborsClassifier
+
+file_name = "creditcard.csv"
+
+fraud = []      #class 1
+nonfraud = []   #class 0
+
+#read data file
+with open(file_name,'r') as f:
+    next(f)
+    for line in csv.reader(f):
+        if(int(line[-1]) == 0):
+            nonfraud.append(line[1:-1])
+        else:
+            fraud.append(line[1:-1])
+    f.close()
+
+nonfraud = [[float(num) for num in row] for row in nonfraud]
+fraud = [[float(num) for num in row]for row in fraud]
+
+nonfraud = np.array(nonfraud)
+fraud = np.array(fraud)
+
+nonfraud = sklearn.preprocessing.normalize(nonfraud, axis=0)
+fraud = sklearn.preprocessing.normalize(fraud, axis=0)
+
+print ("Fraud shape:", np.shape(fraud))       # 492
+print ("Nonfraud shape:", np.shape(nonfraud))    # 284315
+
+#extract 80% training and 20% test data
+num_fraudtrain = 392
+num_fraudtest = 100
+
+num_nonfraudtrain = 227452
+num_nonfraudtest = 56863
+
+np.random.shuffle(fraud)       #randomize the data
+np.random.shuffle(nonfraud)
+
+fraud_train = fraud[:num_fraudtrain]
+fraud_test = fraud[num_fraudtrain:]
+
+nonfraud_train = nonfraud[:num_nonfraudtrain]
+nonfraud_test = nonfraud[num_nonfraudtrain:]
+
+#Process data for library analysis
+training_data = np.concatenate((fraud_train, nonfraud_train), axis=0)
+training_y = np.concatenate((np.ones(num_fraudtrain), np.zeros(num_nonfraudtrain)), axis=0)
+test_data = np.concatenate((fraud_test, nonfraud_test), axis=0)
+test_y = np.concatenate((np.ones(num_fraudtest), np.zeros(num_nonfraudtest)), axis=0)
+
+#Test LDA and QDA again
+qda = sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis()
+qda.fit(training_data, training_y)
+print("\nQDA\n*************************************")
+print("Training error rate", 1-qda.score(training_data,training_y))
+print("Test error rate", 1-qda.score(test_data,test_y))
+
+lda = sklearn.discriminant_analysis.LinearDiscriminantAnalysis()
+lda.fit(training_data, training_y)
+print("\nLDA\n*************************************")
+print("Training error rate", 1-lda.score(training_data,training_y))
+print("Test error rate", 1-lda.score(test_data,test_y))
+
+#testing logistic regression
+logistic = LogisticRegression()
+logistic = logistic.fit(training_data, training_y)
+print("\nLogitic Regression\n*************************************")
+print("Training error rate", 1-logistic.score(training_data,training_y))
+print("Test error rate", 1-logistic.score(test_data,test_y))
+
+#testing decision trees
+clf = tree.DecisionTreeClassifier()
+clf.fit(training_data, training_y)
+print("\nDecision Tree\n*************************************")
+print("Training error rate", 1-clf.score(training_data,training_y))
+print("Test error rate", 1-clf.score(test_data,test_y))
+
+#testing k-nearest neighbors
+knn = KNeighborsClassifier()
+knn.fit(training_data, training_y)
+print("\nK-Nearest Neighbors (k=5)\n*************************************")
+print("Training error rate", 1-knn.score(training_data,training_y))
+print("Test error rate", 1-knn.score(test_data,test_y))
