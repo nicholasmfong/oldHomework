@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1444663366 source:z:\dcengr\my documents\coen20labs\lab assignments\absolute_value_without_branch\main.c
+	<stdio.h>
+	<stdint.h>
+	<stdlib.h>
+	"library.h"
+
+1444622516 z:\dcengr\my documents\coen20labs\lab assignments\\library.h
+
+1446067215 source:z:\dcengr\my documents\coen20labs\lab assignments\absolute_value_without_branch\absvalinasm.s
+

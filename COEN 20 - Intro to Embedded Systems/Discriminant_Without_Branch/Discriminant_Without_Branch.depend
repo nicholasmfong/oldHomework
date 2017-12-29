@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1444625936 source:z:\dcengr\my documents\coen20labs\lab assignments\discriminant_without_branch\main.c
+	<stdio.h>
+	<stdint.h>
+	"library.h"
+
+1444622516 z:\dcengr\my documents\coen20labs\lab assignments\\library.h
+
+1446068671 source:z:\dcengr\my documents\coen20labs\lab assignments\discriminant_without_branch\discrinasm.s
+

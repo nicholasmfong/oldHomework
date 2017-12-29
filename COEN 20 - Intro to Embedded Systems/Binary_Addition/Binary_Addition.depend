@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1444755262 source:z:\dcengr\my documents\coen20labs\lab assignments\binary_addition\main.c
+	<stdio.h>
+	<stdint.h>
+	"library.h"
+
+1444622516 z:\dcengr\my documents\coen20labs\lab assignments\\library.h
+
+1445462885 source:z:\dcengr\my documents\coen20labs\lab assignments\binary_addition\binary_addition.c
+
