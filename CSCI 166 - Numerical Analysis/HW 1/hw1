@@ -1,0 +1,132 @@
+>> diary on
+>> mp1driver
+ Step 1, original formula: f(x)= x-sin(x)
+    x         f(x)
+ 0.0500000    2.0831823e-005
+ 0.0400000    1.0665506e-005
+ 0.0300000    4.5001507e-006
+ 0.0200000    1.3336539e-006
+ 0.0100000    1.6670674e-007
+ 0.0010000    1.1641532e-010
+ 0.0001000    0.0000000e+000
+ 0.0000100    0.0000000e+000
+ 0.0000010    0.0000000e+000
+ 0.0000001    0.0000000e+000
+
+ Step 2, Maclauren approximation of x-sin(x)
+    x         f(x)
+ 0.0500000    2.0830730e-005
+ 0.0400000    1.0665813e-005
+ 0.0300000    4.4997973e-006
+ 0.0200000    1.3333065e-006
+ 0.0100000    1.6666581e-007
+ 0.0010000    1.6666668e-010
+ 0.0001000    1.6666665e-013
+ 0.0000100    1.6666665e-016
+ 0.0000010    1.6666666e-019
+ 0.0000001    1.6666668e-022
+
+ Step 3, Horners approximation of x-sin(x)
+    x         f(x)
+ 0.0500000    4.1661464e-004
+ 0.0400000    2.6664534e-004
+ 0.0300000    1.4999326e-004
+ 0.0200000    6.6665329e-005
+ 0.0100000    1.6666583e-005
+ 0.0010000    1.6666668e-007
+ 0.0001000    1.6666666e-009
+ 0.0000100    1.6666666e-011
+ 0.0000010    1.6666668e-013
+ 0.0000001    1.6666667e-015
+
+ Step 4, double precision: f(x)= x-sin(x)
+    x         f(x)
+ 0.0500000    2.0830729e-005
+ 0.0400000    1.0665813e-005
+ 0.0300000    4.4997975e-006
+ 0.0200000    1.3333067e-006
+ 0.0100000    1.6666583e-007
+ 0.0010000    1.6666666e-010
+ 0.0001000    1.6666666e-013
+ 0.0000100    1.6666728e-016
+ 0.0000010    1.6665373e-019
+ 0.0000001    1.7205357e-022
+
+The end
+>> exit
+
+
+
+
+%file mp1driver.m
+%driver for MP1
+a = [.05, .04, .03, .02, .01, .001, .0001, .00001, .000001, .0000001];
+asing = single(a);
+%step 1
+out1 = step1(asing);
+table1 = [asing; out1];
+fprintf(' Step 1, original formula: f(x)= x-sin(x)\n    x         f(x)');
+fprintf('\n %9.7f    %14.7e',table1);
+fprintf('\n\n');
+%step 2
+out2 = step2(asing);
+table2 = [asing; out2];
+fprintf(' Step 2, Maclauren approximation of x-sin(x)\n    x         f(x)');
+fprintf('\n %9.7f    %14.7e',table2);
+fprintf('\n\n');
+%step 3
+out3 = step3(asing);
+table3 = [asing; out3];
+fprintf(' Step 3, Horners approximation of x-sin(x)\n    x         f(x)');
+fprintf('\n %9.7f    %14.7e',table3);
+fprintf('\n\n');
+%step 4
+out4 = step4(a);
+table4 = [a; out4];
+fprintf(' Step 4, double precision: f(x)= x-sin(x)\n    x         f(x)');
+fprintf('\n %9.7f    %14.7e',table4);
+fprintf('\n\n');
+
+fprintf('The end\n');
+
+
+
+
+
+
+% file step1.m (name taken from function name)
+function [out1] = step1(a)
+  for i=1:10,
+      out1(i)=a(i)-single(sin(a(i)));
+  end;
+  return;
+% file step2.m (name taken from function name)
+function [out2] = step2(a)
+  for i=1:10,
+      out2(i)=single(power(a(i),3)/factorial(3))-single(power(a(i),5)/factorial(5))+single(power(a(i),7)/factorial(7))-single(power(a(i),9)/factorial(9));
+  end;
+  return;
+
+
+
+% file step3.m (name taken from function name)
+function [out3] = step3(a)
+  for i=1:10,
+      out3(i)=single((single((single((single(-power(a(i),2)/factorial(9))+1/factorial(7))*power(a(i),2))-1/factorial(5))*power(a(i),2))+1/factorial(3))*power(a(i),2));
+  end;
+  return;
+
+
+
+
+% file step4.m (name taken from function name)
+function [out4] = step4(a)
+  for i=1:10,
+      out4(i)=a(i)-(sin(a(i)));
+  end;
+  return;
+	HW 1	Nicholas Fong
+		1/18/17
+		CSCI 166
+		Smolarski
+
