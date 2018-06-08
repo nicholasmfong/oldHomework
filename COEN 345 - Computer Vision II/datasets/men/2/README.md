@@ -1,0 +1,1 @@
+This is an example of the file structure used in my project, where each folder under the men dataset represents the class, or in this case the age of the person. This folder should be populated with a bunch of images of faces of 2 year old boys.
